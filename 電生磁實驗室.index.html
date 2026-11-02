@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>電生磁實驗室</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef3ff;--card:#fffdf5;--ink:#1d1d2b;--accent:#2f3a8f;--on:#e8590c;--ok:#2b8a3e;--bad:#c92a2a;--line:#1d1d2b;--soft:#dfe6ff;--panel:#fff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14172b;--card:#1f2340;--ink:#f1f1f8;--accent:#9db0ff;--on:#ffa94d;--ok:#69db7c;--bad:#ff8787;--line:#f1f1f8;--soft:#2a2f57;--panel:#262b50}}
+:root[data-theme="dark"]{--bg:#14172b;--card:#1f2340;--ink:#f1f1f8;--accent:#9db0ff;--on:#ffa94d;--ok:#69db7c;--bad:#ff8787;--line:#f1f1f8;--soft:#2a2f57;--panel:#262b50}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 "PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;padding:16px}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-size:clamp(24px,5vw,34px);margin:4px 0 2px;color:var(--accent)}
+.sub{margin:0 0 14px;opacity:.8}
+.card{background:var(--card);border:3px solid var(--line);border-radius:22px;box-shadow:6px 6px 0 var(--accent);padding:16px;margin-bottom:22px}
+.lab{display:grid;grid-template-columns:1fr 260px;gap:16px}
+@media(max-width:760px){.lab{grid-template-columns:1fr}}
+svg{width:100%;height:auto;display:block;background:var(--panel);border-radius:14px}
+.side{display:flex;flex-direction:column;gap:12px}
+button{font:inherit;font-weight:700;cursor:pointer;border:3px solid var(--line);border-radius:16px;padding:12px 14px;background:var(--soft);color:var(--ink)}
+button:active{transform:translateY(2px)}
+#toggle{font-size:22px;padding:18px 10px;background:var(--accent);color:#fff}
+#toggle.on{background:var(--on);color:#1d1d2b}
+.stat{background:var(--soft);border-radius:14px;padding:10px 14px}
+.stat b{color:var(--accent)}
+label{display:flex;gap:8px;align-items:center;cursor:pointer}
+input[type=checkbox]{width:22px;height:22px}
+#log{margin:0;padding-left:20px;font-size:16px}
+.tip{background:var(--card);border:3px solid var(--line);border-radius:26px;box-shadow:6px 6px 0 var(--accent);overflow:hidden}
+.tip h2{margin:0;padding:10px 20px;border-bottom:3px solid var(--line);font-size:24px;text-align:center}
+.tip div{padding:14px 20px}.tip h3{margin:0 0 6px;color:var(--accent);font-size:26px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}
+.step{background:var(--soft);border-radius:16px;padding:12px}
+.step span{display:inline-block;background:var(--accent);color:#fff;border-radius:50%;width:32px;height:32px;text-align:center;line-height:32px;margin-right:6px}
+.step.done{outline:3px solid var(--ok)}
+.q{margin:10px 0}.opts{display:flex;flex-wrap:wrap;gap:8px}
+.fb{min-height:1.6em;font-weight:700}
+.rot{animation:pulse .6s}
+@keyframes pulse{50%{transform:scale(1.04)}}
+.flow{stroke-dasharray:10 14;animation:fl .6s linear infinite}
+@keyframes fl{to{stroke-dashoffset:-24}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>⚡ 電與磁的奧秘：電生磁實驗室</h1>
+<p class="sub">按下按鈕接通電路，觀察指南針有什麼變化！</p>
+
+<div class="card lab">
+<svg viewBox="0 0 700 400" role="img" aria-label="電生磁實驗裝置">
+  <!-- 磁力線 -->
+  <g id="rings" style="display:none" fill="none" stroke="#7048e8" stroke-width="2" stroke-dasharray="6 6" opacity=".8">
+    <ellipse cx="350" cy="72" rx="30" ry="16"/><ellipse cx="350" cy="72" rx="60" ry="30"/><ellipse cx="350" cy="72" rx="90" ry="44"/>
+  </g>
+  <!-- 導線 -->
+  <path id="wire" d="M95 320V72H605V340H150V320" fill="none" stroke="#555" stroke-width="5" stroke-linejoin="round"/>
+  <path id="cur" d="M95 320V72H605V340H150V320" fill="none" stroke="#ffd43b" stroke-width="5" stroke-linejoin="round" style="display:none" class="flow"/>
+  <rect x="150" y="66" width="0" height="0"/>
+  <rect x="190" y="66" width="320" height="12" rx="6" fill="#9bb0ff" stroke="#4b5bb5" stroke-width="2"/>
+  <!-- 指南針 -->
+  <ellipse cx="350" cy="320" rx="38" ry="10" fill="#aab" stroke="#667" stroke-width="2"/>
+  <rect x="345" y="205" width="10" height="115" fill="#889"/>
+  <g id="needle" transform="rotate(0 350 205)">
+    <polygon points="350,199 350,211 470,205" fill="#e03131"/>
+    <polygon points="350,199 350,211 230,205" fill="#4263eb"/>
+    <circle cx="350" cy="205" r="5" fill="#fff" stroke="#333"/>
+    <text x="478" y="212" font-size="22" font-weight="700" fill="currentColor">N</text>
+    <text x="196" y="212" font-size="22" font-weight="700" fill="currentColor">S</text>
+  </g>
+  <path id="arc" style="display:none" d="M485 215 Q505 235 495 262" fill="none" stroke="#e8590c" stroke-width="4" stroke-linecap="round"/>
+  <polygon id="arcH" style="display:none" points="486,262 504,258 496,274" fill="#e8590c"/>
+  <!-- 電池 -->
+  <rect x="60" y="320" width="120" height="55" rx="6" fill="#4a5058" stroke="#222" stroke-width="3"/>
+  <circle cx="95" cy="318" r="9" fill="#e03131"/><circle cx="150" cy="318" r="9" fill="#222"/>
+  <text x="85" y="304" font-size="20" font-weight="700" fill="currentColor">＋</text><text x="140" y="304" font-size="20" font-weight="700" fill="currentColor">－</text>
+  <text x="105" y="357" font-size="22" fill="#ffd43b">⚡</text>
+  <!-- 開關 -->
+  <rect x="215" y="345" width="125" height="22" rx="4" fill="#5c6bc0" stroke="#283593" stroke-width="2"/>
+  <circle cx="240" cy="340" r="8" fill="#ddd" stroke="#555" stroke-width="2"/><circle cx="320" cy="340" r="8" fill="#ddd" stroke="#555" stroke-width="2"/>
+  <g id="blade" style="transition:transform .35s" transform="rotate(-40 240 340)"><rect x="240" y="334" width="80" height="12" rx="5" fill="#b0b8c8" stroke="#555" stroke-width="2"/></g>
+  <!-- 電阻 -->
+  <rect x="440" y="345" width="130" height="22" rx="4" fill="#5c6bc0" stroke="#283593" stroke-width="2"/>
+  <rect x="470" y="326" width="70" height="22" rx="8" fill="#e9c9a0" stroke="#555" stroke-width="2"/>
+  <rect x="490" y="326" width="6" height="22" fill="#e03131"/><rect x="504" y="326" width="6" height="22" fill="#222"/>
+  <text x="20" y="30" font-size="20" fill="currentColor" id="svgmsg">電路斷開 🔴</text>
+</svg>
+
+<div class="side">
+  <button id="toggle">🔌 接通電路</button>
+  <div class="stat">電路狀態：<b id="st">斷開</b><br>磁針偏轉角度：<b id="ang">0</b>°</div>
+  <div class="stat">已做實驗：<b id="cnt">0</b> 次</div>
+  <label><input type="checkbox" id="field"> 顯示「看不見的磁力」</label>
+  <button id="reset">🔄 重置實驗</button>
+</div>
+</div>
+
+<div class="card"><b>📋 實驗紀錄</b><ol id="log"><li>尚未開始，按下「接通電路」吧！</li></ol></div>
+
+<div class="tip"><h2>📖 科學小貼士</h2><div><h3>【電生磁】</h3>當電流通過電線時，電線周圍就會產生一股『看不見的磁力』。這股磁力就像一雙無形的手拉動了指南針，讓磁針偏轉。</div></div>
+<br>
+
+<div class="card"><b>🎯 三步驟任務</b>
+<div class="steps" style="margin-top:10px">
+<div class="step" id="s1"><span>1</span><b>觀察</b><br>電路斷開時，磁針指向哪裡？</div>
+<div class="step" id="s2"><span>2</span><b>操作</b><br>按下按鈕，發生了什麼事？</div>
+<div class="step" id="s3"><span>3</span><b>驗證</b><br>重複接通、斷開 3 次，結果一樣嗎？</div>
+</div></div>
+
+<div class="card"><b>🧠 小測驗</b><div id="quiz"></div></div>
+</div>
+
+<script>
+const TARGET=40;
+let on=false,count=0,angle=0,vel=0,goal=0,raf=null,logs=[];
+const $=id=>document.getElementById(id);
+const needle=$('needle');
+
+function draw(){needle.setAttribute('transform','rotate('+angle.toFixed(2)+' 350 205)');$('ang').textContent=Math.round(angle)}
+function step(){
+  // 固定步長彈簧阻尼：沒有隨機數，結果每次都一樣
+  for(let i=0;i<2;i++){const a=-0.09*(angle-goal)-0.16*vel;vel+=a;angle+=vel}
+  draw();
+  if(Math.abs(angle-goal)<0.05&&Math.abs(vel)<0.05){angle=goal;vel=0;draw();raf=null;return}
+  raf=requestAnimationFrame(step);
+}
+function move(){if(!raf)raf=requestAnimationFrame(step)}
+
+function render(){
+  $('toggle').textContent=on?'✂️ 斷開電路':'🔌 接通電路';
+  $('toggle').classList.toggle('on',on);
+  $('st').textContent=on?'接通':'斷開';
+  $('blade').setAttribute('transform',on?'rotate(0 240 340)':'rotate(-40 240 340)');
+  $('cur').style.display=on?'':'none';
+  $('arc').style.display=$('arcH').style.display=on?'':'none';
+  $('rings').style.display=(on&&$('field').checked)?'':'none';
+  $('svgmsg').textContent=on?'電路接通 🟢 電流流動中':'電路斷開 🔴';
+}
+function addLog(t){logs.unshift(t);logs=logs.slice(0,5);$('log').innerHTML=logs.map(x=>'<li>'+x+'</li>').join('')}
+
+$('toggle').onclick=()=>{
+  on=!on;goal=on?TARGET:0;render();move();
+  if(on){count++;$('cnt').textContent=count;addLog('第 '+count+' 次實驗：接通 → 偏轉 '+TARGET+'°'+(count>1?'，與前幾次完全相同 ✅':''));$('s2').classList.add('done');if(count>=3)$('s3').classList.add('done')}
+  else{addLog('第 '+count+' 次實驗：斷開 → 回到 0°，磁針靜止 ✅')}
+};
+$('field').onchange=render;
+$('reset').onclick=()=>{on=false;goal=0;count=0;logs=[];$('cnt').textContent=0;$('log').innerHTML='<li>已重置，請重新開始實驗。</li>';['s2','s3'].forEach(i=>$(i).classList.remove('done'));render();move()};
+$('s1').classList.add('done');
+
+const Q=[
+ {q:'導線沒有電流時，磁針會偏轉嗎？',o:['會偏轉','不會偏轉，保持原位'],a:1,e:'沒有電流就沒有電生出的磁力，磁針只受地球磁場影響，保持不動。'},
+ {q:'接通電路後，磁針為什麼會偏轉？',o:['導線被風吹動','電流使導線周圍產生磁力','電池發出光'],a:1,e:'電流通過導線會產生磁力，拉動了磁針，這就是「電生磁」！'}
+];
+$('quiz').innerHTML=Q.map((x,i)=>'<div class="q"><div>'+(i+1)+'. '+x.q+'</div><div class="opts">'+x.o.map((t,j)=>'<button data-i="'+i+'" data-j="'+j+'">'+t+'</button>').join('')+'</div><div class="fb" id="fb'+i+'"></div></div>').join('');
+$('quiz').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  const i=+b.dataset.i,j=+b.dataset.j,x=Q[i],f=$('fb'+i);
+  if(j===x.a){f.style.color='var(--ok)';f.textContent='🎉 答對了！'+x.e;f.classList.remove('rot');void f.offsetWidth;f.classList.add('rot')}
+  else{f.style.color='var(--bad)';f.textContent='再想想看～可以回到實驗再觀察一次！'}
+};
+render();draw();
+</script>
+</body>
+</html>
